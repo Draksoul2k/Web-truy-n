@@ -5,6 +5,7 @@
     { "source": "/api/top-mangas", "destination": "/api/top_mangas" },
     { "source": "/api/search-manga", "destination": "/api/search_manga" },
     { "source": "/api/manga-details", "destination": "/api/manga_details" },
-    { "source": "/api/chapter-images", "destination": "/api/chapter_images" }
+    { "source": "/api/chapter-images", "destination": "/api/chapter_images" },
+    { "source": "/api/test-mirrors", "destination": "/api/test_mirrors" }
   ]
 }
