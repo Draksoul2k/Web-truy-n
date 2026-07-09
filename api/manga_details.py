@@ -53,40 +53,37 @@ class handler(BaseHTTPRequestHandler):
                 html = response.read().decode('utf-8')
             
             # Title
-            title_match = re.search(r'<h1 class="title-detail"[^>]*>(.*?)</h1>', html, re.DOTALL)
-            title = re.sub(r'<[^>]+>', '', title_match.group(1)).strip() if title_match else "Chưa cập nhật"
+            title_match = re.search(r'class="comic-detail-title"[^>]*>(.*?)</h1>', html)
+            title = title_match.group(1).strip() if title_match else "Chưa cập nhật"
             
             # Cover image
-            cover_match = re.search(r'class=["\'][^"\']*col-image[^"\']*["\'].*?<img[^>]+(?:data-src|data-original|src)=["\']([^"\']+)["\']', html, re.DOTALL)
+            cover_match = re.search(fr'<img[^>]+src=["\']([^"\']+)["\'][^>]+alt=["\']{re.escape(title)}["\']', html)
+            if not cover_match:
+                cover_match = re.search(r'src=["\'](https://img\.otruyenapi\.com/uploads/comics/[^"\']+)["\']', html)
             cover_image = cover_match.group(1).strip() if cover_match else ""
             
             # Description
-            desc_match = re.search(r'<div class="detail-content"[^>]*>(.*?)</div>', html, re.DOTALL)
+            import html as html_lib
+            desc_match = re.search(r'class="fs-13 mt-2"[^>]*>(.*?)</div>', html, re.DOTALL)
             description = ""
             if desc_match:
-                description = re.sub(r'<[^>]+>', '', desc_match.group(1)).strip()
+                raw_desc = html_lib.unescape(desc_match.group(1))
+                description = re.sub(r'<[^>]+>', '', raw_desc).strip()
                 
             # Author
-            author_match = re.search(r'class="author[^"]*".*?<div class="col-xs-8"[^>]*>(.*?)</div>', html, re.DOTALL)
-            author = re.sub(r'<[^>]+>', '', author_match.group(1)).strip() if author_match else "Cập nhật"
+            author_match = re.search(r'Tác giả</dt><dd>(.*?)</dd>', html)
+            author = author_match.group(1).strip() if author_match else "Đang cập nhật"
             
             # Status
-            status_match = re.search(r'class="status[^"]*".*?<div class="col-xs-8"[^>]*>(.*?)</div>', html, re.DOTALL)
-            status = re.sub(r'<[^>]+>', '', status_match.group(1)).strip() if status_match else "Đang tiến hành"
+            status_match = re.search(r'Trạng thái</dt><dd>(.*?)</dd>', html)
+            status = status_match.group(1).strip() if status_match else "Đang tiến hành"
             
             # Views
-            views_match = re.search(r'class="views[^"]*".*?<div class="col-xs-8"[^>]*>(.*?)</div>', html, re.DOTALL)
-            views = re.sub(r'<[^>]+>', '', views_match.group(1)).strip() if views_match else "100K"
+            views_match = re.search(r'Lượt xem</dt><dd>(.*?)</dd>', html)
+            views = views_match.group(1).strip() if views_match else "100K"
             
             # Follows
-            follows_match = re.search(r'<b>(\d+[\d,.]*)</b> người đã theo dõi', html)
             follows = "10K"
-            if follows_match:
-                follows = follows_match.group(1).strip()
-            else:
-                follows_match_alt = re.search(r'Theo dõi:\s*<strong>(\d+[\d,.]*)</strong>', html)
-                if follows_match_alt:
-                    follows = follows_match_alt.group(1).strip()
             
             # Chapters
             chapters = get_chapters_list_from_html(html)

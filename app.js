@@ -679,8 +679,7 @@ async function loadChapterImagesOnDemand(chapter) {
     </div>
   `;
   
-  const slugReplaced = chapter.chapter_slug.replace("chapter-", "chuong-");
-  const chapterUrl = `https://nettruyenz.com/truyen-tranh/${selectedManga.slug}/${slugReplaced}`;
+  const chapterUrl = `https://nettruyenz.com/${selectedManga.slug}/${chapter.chapter_slug}`;
   const apiUrl = `/api/chapter-images?url=${encodeURIComponent(chapterUrl)}`;
   
   try {
