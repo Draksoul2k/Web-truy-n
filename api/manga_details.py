@@ -10,35 +10,31 @@ HEADERS = {
     'Accept-Language': 'vi,en-US;q=0.9,en;q=0.8'
 }
 
-def get_chapters_list(slug):
-    api_url = f"{BASE_URL}/Comic/Services/ComicService.asmx/ChapterList?slug={slug}"
-    req = urllib.request.Request(api_url, headers={
-        'User-Agent': HEADERS['User-Agent'],
-        'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'X-Requested-With': 'XMLHttpRequest'
-    })
-    try:
-        with urllib.request.urlopen(req, timeout=10) as response:
-            content = response.read().decode('utf-8')
-            data = json.loads(content)
-            raw_chaps = data.get("data", [])
-            chaps = []
-            for c in raw_chaps:
+def get_chapters_list_from_html(html):
+    table_match = re.search(r'<table class="chapter-table">.*?</table>', html, re.DOTALL)
+    chaps = []
+    if table_match:
+        table_html = table_match.group(0)
+        links = re.findall(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', table_html, re.DOTALL)
+        for href, text in links:
+            path_parts = urllib.parse.urlparse(href).path.strip('/').split('/')
+            if len(path_parts) >= 2:
+                chapter_slug = path_parts[1]
+            elif len(path_parts) == 1:
+                chapter_slug = path_parts[0]
+            else:
+                chapter_slug = ""
+                
+            if chapter_slug:
+                num_match = re.search(r'chap-(\d+[\d,.]*)', chapter_slug)
+                chapter_num = num_match.group(1) if num_match else "0"
                 chaps.append({
-                    "chapter_name": c["chapter_name"],
-                    "chapter_slug": c["chapter_slug"],
-                    "chapter_num": c["chapter_num"]
+                    "chapter_name": re.sub(r'<[^>]+>', '', text).strip(),
+                    "chapter_slug": chapter_slug,
+                    "chapter_num": chapter_num
                 })
-            def get_num(x):
-                try:
-                    return float(x.get("chapter_num", 0))
-                except:
-                    return 0.0
-            chaps.sort(key=get_num)
-            return chaps
-    except Exception as e:
-        print(f"Error fetching chapters list for {slug}: {e}")
-        return []
+        chaps.reverse()
+    return chaps
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -60,7 +56,7 @@ class handler(BaseHTTPRequestHandler):
             title_match = re.search(r'<h1 class="title-detail"[^>]*>(.*?)</h1>', html, re.DOTALL)
             title = re.sub(r'<[^>]+>', '', title_match.group(1)).strip() if title_match else "Chưa cập nhật"
             
-            # Cover image (fixed regex with multi-class support)
+            # Cover image
             cover_match = re.search(r'class=["\'][^"\']*col-image[^"\']*["\'].*?<img[^>]+(?:data-src|data-original|src)=["\']([^"\']+)["\']', html, re.DOTALL)
             cover_image = cover_match.group(1).strip() if cover_match else ""
             
@@ -93,7 +89,7 @@ class handler(BaseHTTPRequestHandler):
                     follows = follows_match_alt.group(1).strip()
             
             # Chapters
-            chapters = get_chapters_list(slug)
+            chapters = get_chapters_list_from_html(html)
             
             manga_details = {
                 "title": title,

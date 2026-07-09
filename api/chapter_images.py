@@ -21,25 +21,33 @@ class handler(BaseHTTPRequestHandler):
             with urllib.request.urlopen(req, timeout=15) as response:
                 html = response.read().decode('utf-8')
             
-            pattern = r"class=['\"]page-chapter['\"][^>]*>\s*<img[^>]+data-src=['\"]([^'\"]+)['\"]"
-            images = re.findall(pattern, html)
-            
-            if not images:
-                pattern_fallback = r"<img[^>]+class=['\"][^'\"]*lozad[^'\"]*['\"][^>]+data-src=['\"]([^'\"]+)['\"]"
-                images = re.findall(pattern_fallback, html)
-            
-            path_parts = urllib.parse.urlparse(chapter_url).path.split('/')
-            comic_slug = ""
-            for part in path_parts:
-                if part and part != "truyen-tranh":
-                    comic_slug = part
-                    break
-            
+            # Bóc tách ảnh trên nettruyenz (các ảnh có alt="page")
+            img_tags = re.findall(r'<img[^>]+>', html)
             filtered_images = []
-            for img in images:
-                if comic_slug and (f"/{comic_slug}/" in img or comic_slug in img):
-                    filtered_images.append(img)
-                    
+            for tag in img_tags:
+                if 'alt="page"' in tag or "alt='page'" in tag:
+                    src_match = re.search(r'src=["\']([^"\']+)["\']', tag)
+                    if src_match:
+                        filtered_images.append(src_match.group(1).strip())
+            
+            # Dự phòng định dạng NetTruyen cũ
+            if not filtered_images:
+                pattern = r"class=['\"]page-chapter['\"][^>]*>\s*<img[^>]+data-src=['\"]([^'\"]+)['\"]"
+                images = re.findall(pattern, html)
+                if not images:
+                    pattern_fallback = r"<img[^>]+class=['\"][^'\"]*lozad[^'\"]*['\"][^>]+data-src=['\"]([^'\"]+)['\"]"
+                    images = re.findall(pattern_fallback, html)
+                
+                path_parts = urllib.parse.urlparse(chapter_url).path.split('/')
+                comic_slug = ""
+                for part in path_parts:
+                    if part and part != "truyen-tranh":
+                        comic_slug = part
+                        break
+                for img in images:
+                    if comic_slug and (f"/{comic_slug}/" in img or comic_slug in img):
+                        filtered_images.append(img)
+                        
             res_data = json.dumps(filtered_images).encode('utf-8')
             
             self.send_response(200)

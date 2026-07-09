@@ -24,36 +24,32 @@ HEADERS = {
     'Accept-Language': 'vi,en-US;q=0.9,en;q=0.8'
 }
 
-def get_chapters_list(slug):
-    api_url = f"{BASE_URL}/Comic/Services/ComicService.asmx/ChapterList?slug={slug}"
-    req = urllib.request.Request(api_url, headers={
-        'User-Agent': HEADERS['User-Agent'],
-        'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'X-Requested-With': 'XMLHttpRequest'
-    })
-    try:
-        with urllib.request.urlopen(req, timeout=10) as response:
-            content = response.read().decode('utf-8')
-            data = json.loads(content)
-            raw_chaps = data.get("data", [])
-            chaps = []
-            for c in raw_chaps:
+def get_chapters_list_from_html(html):
+    table_match = re.search(r'<table class="chapter-table">.*?</table>', html, re.DOTALL)
+    chaps = []
+    if table_match:
+        table_html = table_match.group(0)
+        links = re.findall(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', table_html, re.DOTALL)
+        for href, text in links:
+            path_parts = urllib.parse.urlparse(href).path.strip('/').split('/')
+            if len(path_parts) >= 2:
+                chapter_slug = path_parts[1]
+            elif len(path_parts) == 1:
+                chapter_slug = path_parts[0]
+            else:
+                chapter_slug = ""
+                
+            if chapter_slug:
+                num_match = re.search(r'chap-(\d+[\d,.]*)', chapter_slug)
+                # Chuyển đổi định dạng số chương
+                chapter_num = num_match.group(1) if num_match else "0"
                 chaps.append({
-                    "chapter_name": c["chapter_name"],
-                    "chapter_slug": c["chapter_slug"],
-                    "chapter_num": c["chapter_num"]
+                    "chapter_name": re.sub(r'<[^>]+>', '', text).strip(),
+                    "chapter_slug": chapter_slug,
+                    "chapter_num": chapter_num
                 })
-            # Sắp xếp chương tăng dần
-            def get_num(x):
-                try:
-                    return float(x.get("chapter_num", 0))
-                except:
-                    return 0.0
-            chaps.sort(key=get_num)
-            return chaps
-    except Exception as e:
-        print(f"Error fetching chapters list for {slug}: {e}")
-        return []
+        chaps.reverse()
+    return chaps
 
 def parse_manga_figures(html):
     figures = re.findall(r'<figure class="clearfix">.*?</figure>', html, re.DOTALL)
@@ -68,9 +64,16 @@ def parse_manga_figures(html):
             title = re.sub(r'<[^>]+>', '', link_match.group(2)).strip()
             
             slug_match = re.search(r'truyen-tranh/([^/"]+)', href)
-            slug = slug_match.group(1).strip() if slug_match else ""
+            if not slug_match:
+                # Fallback cho nettruyenz
+                path_parts = urllib.parse.urlparse(href).path.strip('/').split('/')
+                slug = path_parts[0] if path_parts else ""
+            else:
+                slug = slug_match.group(1).strip()
             
             img_match = re.search(r'<img[^>]+data-original="([^"]+)"', fig)
+            if not img_match:
+                img_match = re.search(r'<img[^>]+src="([^"]+)"', fig)
             cover_image = img_match.group(1).strip() if img_match else ""
             
             chap_match = re.search(r'<li class="chapter[^"]*".*?<a[^>]+>(.*?)</a>', fig, re.DOTALL)
@@ -110,7 +113,6 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
                     img_data = response.read()
                     content_type = response.headers.get('Content-Type', 'image/jpeg')
                     
-                    # Tính MD5 hash của dữ liệu ảnh để làm chữ ký định danh duy nhất
                     img_hash = hashlib.md5(img_data).hexdigest()
                     
                     self.send_response(200)
@@ -127,7 +129,6 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
         # 2. Get Home Mangas (Newly Updated)
         elif parsed_path.path == '/api/home-mangas':
             try:
-                # Trang chủ nettruyenz nằm ở thư mục gốc / chứ không phải /trang-chu
                 url = f"{BASE_URL}/"
                 req = urllib.request.Request(url, headers=HEADERS)
                 with urllib.request.urlopen(req, timeout=15) as response:
@@ -149,8 +150,6 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
             query = urllib.parse.parse_qs(parsed_path.query)
             rank_type = query.get('type', ['week'])[0]
             
-            # map type to NetTruyen sort parameter
-            # day = sort 13, week = sort 12, month = sort 11, year = sort 10 (top all)
             sort_map = {'day': '13', 'week': '12', 'month': '11', 'year': '10'}
             sort_val = sort_map.get(rank_type, '12')
             
@@ -240,8 +239,8 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
                     if follows_match_alt:
                         follows = follows_match_alt.group(1).strip()
                 
-                # Lấy danh sách chương
-                chapters = get_chapters_list(slug)
+                # Lấy danh sách chương trực tiếp từ HTML
+                chapters = get_chapters_list_from_html(html)
                 
                 manga_details = {
                     "title": title,
@@ -279,24 +278,32 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
                 with urllib.request.urlopen(req, timeout=15) as response:
                     html = response.read().decode('utf-8')
                 
-                pattern = r"class=['\"]page-chapter['\"][^>]*>\s*<img[^>]+data-src=['\"]([^'\"]+)['\"]"
-                images = re.findall(pattern, html)
-                
-                if not images:
-                    pattern_fallback = r"<img[^>]+class=['\"][^'\"]*lozad[^'\"]*['\"][^>]+data-src=['\"]([^'\"]+)['\"]"
-                    images = re.findall(pattern_fallback, html)
-                
-                path_parts = urllib.parse.urlparse(chapter_url).path.split('/')
-                comic_slug = ""
-                for part in path_parts:
-                    if part and part != "truyen-tranh":
-                        comic_slug = part
-                        break
-                
+                # Bóc tách ảnh trên nettruyenz (các ảnh có alt="page")
+                img_tags = re.findall(r'<img[^>]+>', html)
                 filtered_images = []
-                for img in images:
-                    if comic_slug and (f"/{comic_slug}/" in img or comic_slug in img):
-                        filtered_images.append(img)
+                for tag in img_tags:
+                    if 'alt="page"' in tag or "alt='page'" in tag:
+                        src_match = re.search(r'src=["\']([^"\']+)["\']', tag)
+                        if src_match:
+                            filtered_images.append(src_match.group(1).strip())
+                
+                # Dự phòng định dạng NetTruyen cũ
+                if not filtered_images:
+                    pattern = r"class=['\"]page-chapter['\"][^>]*>\s*<img[^>]+data-src=['\"]([^'\"]+)['\"]"
+                    images = re.findall(pattern, html)
+                    if not images:
+                        pattern_fallback = r"<img[^>]+class=['\"][^'\"]*lozad[^'\"]*['\"][^>]+data-src=['\"]([^'\"]+)['\"]"
+                        images = re.findall(pattern_fallback, html)
+                    
+                    path_parts = urllib.parse.urlparse(chapter_url).path.split('/')
+                    comic_slug = ""
+                    for part in path_parts:
+                        if part and part != "truyen-tranh":
+                            comic_slug = part
+                            break
+                    for img in images:
+                        if comic_slug and (f"/{comic_slug}/" in img or comic_slug in img):
+                            filtered_images.append(img)
                         
                 res_data = json.dumps(filtered_images).encode('utf-8')
                 
