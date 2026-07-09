@@ -4,13 +4,14 @@ import urllib.parse
 import re
 import json
 
+BASE_URL = "https://nettruyenz.com"
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
     'Accept-Language': 'vi,en-US;q=0.9,en;q=0.8'
 }
 
 def get_chapters_list(slug):
-    api_url = f"https://nettruyen.gg/Comic/Services/ComicService.asmx/ChapterList?slug={slug}"
+    api_url = f"{BASE_URL}/Comic/Services/ComicService.asmx/ChapterList?slug={slug}"
     req = urllib.request.Request(api_url, headers={
         'User-Agent': HEADERS['User-Agent'],
         'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -50,7 +51,7 @@ class handler(BaseHTTPRequestHandler):
             return
             
         try:
-            detail_url = f"https://nettruyen.gg/truyen-tranh/{slug}"
+            detail_url = f"{BASE_URL}/truyen-tranh/{slug}"
             req = urllib.request.Request(detail_url, headers=HEADERS)
             with urllib.request.urlopen(req, timeout=15) as response:
                 html = response.read().decode('utf-8')

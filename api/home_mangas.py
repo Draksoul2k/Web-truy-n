@@ -3,6 +3,7 @@ import urllib.request
 import re
 import json
 
+BASE_URL = "https://nettruyenz.com"
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
     'Accept-Language': 'vi,en-US;q=0.9,en;q=0.8'
@@ -44,7 +45,7 @@ def parse_manga_figures(html):
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
-            url = "https://nettruyen.gg/trang-chu"
+            url = f"{BASE_URL}/"
             req = urllib.request.Request(url, headers=HEADERS)
             with urllib.request.urlopen(req, timeout=15) as response:
                 html = response.read().decode('utf-8')
