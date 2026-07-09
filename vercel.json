@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    { "source": "/proxy", "destination": "/api/proxy" },
+    { "source": "/api/home-mangas", "destination": "/api/home_mangas" },
+    { "source": "/api/top-mangas", "destination": "/api/top_mangas" },
+    { "source": "/api/search-manga", "destination": "/api/search_manga" },
+    { "source": "/api/manga-details", "destination": "/api/manga_details" },
+    { "source": "/api/chapter-images", "destination": "/api/chapter_images" }
+  ]
+}

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer"> <!-- Tránh CDN của NetTruyen chặn trực tiếp từ localhost -->
+  <title>MangaPremium - Trải Nghiệm Đọc Truyện Chất Lượng Cao</title>
+  
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Main Header -->
+  <header>
+    <a href="#" class="logo" id="header-logo">
+      <i class="fa-solid fa-fire-flame-curved"></i> Manga<span>Premium</span>
+    </a>
+    <div class="search-bar" id="global-search-bar">
+      <input type="text" id="global-search-input" placeholder="Tìm tên truyện hoặc tác giả...">
+      <button id="global-search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+    <nav class="nav-links">
+      <a href="#" class="nav-link active" id="nav-home"><i class="fa-solid fa-home"></i> Trang chủ</a>
+      <a href="#" class="nav-link" id="nav-bookmarks"><i class="fa-solid fa-bookmark"></i> Theo dõi</a>
+      <a href="#" class="nav-link" id="nav-history"><i class="fa-solid fa-history"></i> Lịch sử</a>
+    </nav>
+  </header>
+
+  <!-- Homepage / Detail Page Container -->
+  <main class="container" id="home-container">
+    
+    <!-- Manga Grid Section (Shows all top week mangas) -->
+    <section id="manga-grid-section">
+      <div class="home-layout">
+        <!-- Cột chính: Truyện Mới Cập Nhật hoặc kết quả tìm kiếm -->
+        <div class="main-column">
+          <div class="section-header">
+            <h2 class="section-title" id="grid-title">
+              <i class="fa-solid fa-clock-rotate-left"></i> Mới Cập Nhật
+            </h2>
+          </div>
+          <div class="mangas-grid" id="mangas-list-grid">
+            <!-- Render danh sách truyện động -->
+          </div>
+        </div>
+        
+        <!-- Cột phụ: Bảng xếp hạng Top truyện -->
+        <div class="sidebar-column">
+          <div class="sidebar-widget">
+            <h3 class="widget-title"><i class="fa-solid fa-chart-line"></i> Bảng Xếp Hạng</h3>
+            <div class="ranking-tabs">
+              <button class="tab-btn active" data-type="day">Ngày</button>
+              <button class="tab-btn" data-type="week">Tuần</button>
+              <button class="tab-btn" data-type="month">Tháng</button>
+              <button class="tab-btn" data-type="year">Năm</button>
+            </div>
+            <div class="ranking-list" id="ranking-list-container">
+              <!-- Render bảng xếp hạng Top 10 động -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Back to Grid Button -->
+    <button class="btn btn-secondary" id="btn-back-to-grid" style="margin-bottom: 1.5rem; display: none;">
+      <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
+    </button>
+    
+    <!-- Manga Details Hero Banner -->
+    <section class="manga-hero" id="manga-detail-section" style="display: none;">
+      <div class="manga-hero-bg" id="hero-bg"></div>
+      
+      <div class="manga-cover">
+        <img id="manga-cover-img" src="" alt="Cover Image">
+      </div>
+      
+      <div class="manga-info">
+        <div class="manga-tags" id="manga-tags-list">
+          <span class="tag accent">Hot</span>
+          <span class="tag">Manhua</span>
+          <span class="tag">Chuyển Sinh</span>
+          <span class="tag">Cổ Đại</span>
+          <span class="tag">Xuyên Không</span>
+          <span class="tag">Tu Tiên</span>
+        </div>
+        
+        <h1 class="manga-title" id="manga-title-text">Đồ Đệ Của Ta Đều Là Đại Phản Phái</h1>
+        
+        <div class="manga-meta">
+          <div class="manga-meta-item">
+            <i class="fa-solid fa-user"></i>
+            <span>Tác giả: <strong id="manga-author">Cập nhật</strong></span>
+          </div>
+          <div class="manga-meta-item">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Trạng thái: <strong id="manga-status">Đang tiến hành</strong></span>
+          </div>
+          <div class="manga-meta-item">
+            <i class="fa-solid fa-eye"></i>
+            <span>Lượt xem: <strong id="manga-views">1.2M</strong></span>
+          </div>
+          <div class="manga-meta-item">
+            <i class="fa-solid fa-heart"></i>
+            <span>Theo dõi: <strong id="manga-follows">86K</strong></span>
+          </div>
+        </div>
+        
+        <p class="manga-desc" id="manga-desc-text">
+          Diệp Thiên Hành xuyên không thành tổ sư ma đạo vang danh thiên hạ - Lục Châu. Hắn phát hiện mình có chín đồ đệ nghiệt súc ai nấy đều là đại phản phái lừng lẫy một phương. Đại đồ đệ U Minh giáo giáo chủ Vu Chính Hải thống lĩnh vạn ma, nhị đồ đệ Kiếm Ma Ngu Thượng Nhung giết người không chớp mắt... Lục Châu phải thu phục lại các nghịch đồ và uy chấn thiên hạ.
+        </p>
+        <button class="btn-read-more" id="btn-toggle-desc">Xem thêm <i class="fa-solid fa-chevron-down"></i></button>
+        
+        <div class="manga-actions">
+          <button class="btn btn-primary" id="btn-read-first">
+            <i class="fa-solid fa-play"></i> Đọc từ đầu (Chap 0)
+          </button>
+          <button class="btn btn-secondary" id="btn-read-last">
+            Đọc chương mới nhất
+          </button>
+          <button class="btn btn-secondary" id="btn-bookmark">
+            <i class="fa-regular fa-bookmark"></i> Theo dõi truyện
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chapters Section -->
+    <section id="chapters-section" style="display: none;">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i class="fa-solid fa-list-ul"></i> Danh sách chương (<span id="chapters-count">0</span>)
+        </h2>
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search-chapter-input" placeholder="Tìm chương nhanh (vd: 500)...">
+        </div>
+      </div>
+      
+      <div class="chapters-grid" id="chapters-list-grid">
+        <!-- Render chapters dynamically -->
+      </div>
+    </section>
+
+    <!-- Dynamic Bookmarks/History View (Shows when navigating to bookmarks/history tabs) -->
+    <section id="custom-view-section" style="display: none;">
+      <div class="section-header">
+        <h2 class="section-title" id="custom-view-title">
+          <i class="fa-solid fa-bookmark"></i> Truyện Theo Dõi
+        </h2>
+      </div>
+      <div id="custom-view-content">
+        <!-- Bookmark / History contents -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Manga Reader Section (Hidden initially) -->
+  <div class="reader-container" id="manga-reader-section">
+    <!-- Floating Reader Controls -->
+    <div class="reader-controls" id="reader-nav-controls">
+      <div class="control-left">
+        <button class="control-btn" id="reader-btn-home">
+          <i class="fa-solid fa-arrow-left"></i><span>Quay lại</span>
+        </button>
+      </div>
+      
+      <div class="control-center">
+        <button class="control-btn" id="reader-btn-prev" title="Chương trước">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <select class="chapter-select" id="reader-chapter-dropdown">
+          <!-- Chapters option dynamically loaded -->
+        </select>
+        <button class="control-btn" id="reader-btn-next" title="Chương sau">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+      
+      <div class="control-right">
+        <!-- Cấu hình lọc trang QC -->
+        <div class="reader-settings-wrapper" style="position: relative; display: inline-block;">
+          <button class="control-btn" id="reader-btn-settings" title="Cài đặt đọc">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+          <div class="reader-settings-dropdown" id="reader-settings-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; width: 220px; box-shadow: var(--shadow-lg); z-index: 100;">
+            <h4 style="margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem; font-weight: 700;"><i class="fa-solid fa-sliders"></i> Lọc trang quảng cáo</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.8rem; color: var(--text-muted); text-align: left;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="chk-skip-first"> Bỏ 1 trang đầu (QC)
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="chk-skip-first-two"> Bỏ 2 trang đầu (QC)
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="chk-skip-last"> Bỏ trang cuối (QC)
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Bookmark shortcut in reader -->
+        <button class="control-btn" id="reader-btn-bookmark">
+          <i class="fa-regular fa-bookmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrolling Stack of Images -->
+    <div class="image-stack" id="reader-image-stack">
+      <!-- Images will load dynamically -->
+    </div>
+
+    <!-- Bottom Navigation inside Reader -->
+    <div class="reader-bottom-nav">
+      <button class="btn btn-secondary" id="reader-bottom-btn-prev">
+        <i class="fa-solid fa-arrow-left"></i> Chương trước
+      </button>
+      <button class="btn btn-secondary" id="reader-bottom-btn-next">
+        Chương tiếp theo <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="logo">
+        <i class="fa-solid fa-fire-flame-curved"></i> Manga<span>Premium</span>
+      </div>
+      <p>Trang web đọc truyện tranh chất lượng cao và không quảng cáo.</p>
+      <div class="footer-links">
+        <a href="#">Giới thiệu</a>
+        <a href="#">Điều khoản sử dụng</a>
+        <a href="#">Chính sách bảo mật</a>
+        <a href="#">Liên hệ</a>
+      </div>
+      <p style="font-size: 0.75rem; margin-top: 1rem; color: var(--text-dark);">
+        &copy; 2026 MangaPremium. All rights reserved.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Floating Back to Top Button -->
+  <button class="back-to-top" id="btn-back-to-top" title="Lên đầu trang">
+    <i class="fa-solid fa-chevron-up"></i>
+  </button>
+
+  <!-- Client-side Logic Script -->
+  <script src="app.js"></script>
+</body>
+</html>
